@@ -41,10 +41,10 @@ void time_shutdown(){
 }
 
 void loop() {
-  count = millis();
-  if (button = 1){
+  if (button = 1){ //ปุ่มเริ่มอ่านค่า
     calculate();
-    if(count - Time_display > 5000) {
+    count = millis();
+    if(count - Time_display > 500) {
       Time_display = count;
       printf("ADC Value: %d\n",value_adc);
       printf("voltage: %.2f\n",voltage);
