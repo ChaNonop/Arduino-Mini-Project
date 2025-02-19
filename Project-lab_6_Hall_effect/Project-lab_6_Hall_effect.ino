@@ -7,63 +7,93 @@
 LiquidCrystal_I2C lcd(0x27, 16, 2);  // 16 คอลัมน์ 2 แถว
 
 const int ADC_PIN = A0; 
-long Time_display = 0; 
+const int button_pin = 7; 
 float v_ref = 5.0;
 
-unsigned long count;
-unsigned long time;
+unsigned long Time_display = 0; 
+unsigned long buttonpress_time = 0;
+bool ButtonPressed = false;
+bool systemOn = true; // สถานะการทำงานของระบบ
+
 int value_adc;
 float voltage;
-float result;  //magnetic "B" (mT)
-int button;
+float result;  
 
-char buffer_line_1[20];
-char buffer_line_2[20];
+char buffer[50];
 
 void setup() {
   Serial.begin(19200);
-  Wire.begin();      
-  lcd.init();            // เริ่มต้นจอ LCD
-  lcd.backlight();       // เปิดไฟแบ็คไลท์  
+  pinMode(button_pin, INPUT_PULLUP); // ใช้ PULLUP ป้องกันสัญญาณรบกวน
+  Wire.begin();          
+  lcd.init();            
+  lcd.backlight();       
   lcd.setCursor(0,0);  
-  lcd.print("Hi");  
+  lcd.print("Hi");
+  delay(1000);
+  lcd.clear();
 }
-void calculate(){
+
+void calculate() {
   value_adc = analogRead(ADC_PIN); 
-  voltage = (value_adc*v_ref)/1023; 
-  result = (voltage - 2.5731)/ (0.0027);  // สูตรคำนวณสนามแม่เหล็ก
+  voltage = (value_adc * v_ref) / 1023; 
+  result = (voltage - 2.5731) / 0.0027;  
 }
-void display_value(){
-  count = millis();
-  if(count - Time_display > 500) {
-    Time_display = count;
-    //printf("ADC Value: %d\n",value_adc);
-    //printf("voltage: %.2f\n",voltage);
-    //printf("Magnetic field : %.2f mT\n",result);
+
+void display_value() {
+  if (millis() - Time_display > 500) {
+    Time_display = millis();
+    
     lcd.setCursor(0, 0);
-    lcd.printf(sprintf(buffer_line_1,"voltage: %.2f\n",voltage));
+    sprintf(buffer, "Voltage: %.2fV", voltage);
+    lcd.print(buffer);
+
     lcd.setCursor(0, 1);
-    lcd.printf(sprintf(buffer_line_2,"Magnetic field : %.2f mT\n",result));
-  }
-}
-void time_shutdown(){
-  time = millis();
-  if(time <= 600000){ //มากกว่า 10 นาทีให้เคลียจอ
-    button = 1;
-    display_value();
+    sprintf(buffer, "Magnetic: %.2f mT", result);
+    lcd.print(buffer);
+
+    Serial.println(value_adc);
   }
 }
 
-void loop() {
-  if (button = 1){ //ปุ่มเริ่มอ่านค่า
-    calculate();
-    time_shutdown();
+void checkButtonHold() {
+  if (digitalRead(button_pin) == LOW) { // ปุ่มถูกกด (LOW เพราะใช้ PULLUP)
+    if (!ButtonPressed) {
+      buttonpress_time = millis(); // บันทึกเวลาที่เริ่มกดปุ่ม
+      ButtonPressed = true;
+    }
+    // ถ้ากดค้างเกิน 3 วินาที ให้เข้าสู่โหมดประหยัดพลังงาน
+    if (ButtonPressed && (millis() - buttonpress_time >= 3000)) {
+      save_Energy();
+    }
+  } else {
+    ButtonPressed = false; // รีเซ็ตสถานะเมื่อปล่อยปุ่ม
   }
-  else{
-    button = 0;
-    lcd.setCursor(0, 0);              
-    lcd.print("Do not use ,will shutsown");
-    delay(1000);
-    lcd.clear();
+}
+
+void save_Energy() {
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Entering Sleep...");
+  delay(2000);
+  lcd.noBacklight();  
+  systemOn = false; // ปิดการทำงานของระบบ
+  
+  // รอจนกว่าปล่อยปุ่มเพื่อออกจากโหมดเซฟพลังงาน
+  while (!digitalRead(button_pin)); 
+
+  // เปิดจอใหม่และรีเซ็ตระบบเมื่อกดปุ่มอีกครั้ง
+  lcd.backlight();
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Resuming...");
+  delay(2000);
+  systemOn = true;
+}
+
+void loop() {
+  if (systemOn) {
+    calculate();
+    display_value();
+    checkButtonHold();
   }
 }
