@@ -2,7 +2,7 @@
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 
-// 🔹 คลาสสำหรับเซ็นเซอร์แม่เหล็ก
+// คลาสสำหรับเซ็นเซอร์แม่เหล็ก
 class Magnetometer {
 private:
     int pin;
@@ -11,7 +11,9 @@ private:
     float voltage;
     float result;
 public:
-    Magnetometer(int adcPin, float vRef = 5.0) : pin(adcPin), v_ref(vRef) {}
+    Magnetometer(int adcPin, float vRef = 5.0) : pin(adcPin), v_ref(vRef) {
+
+    }
 
     void begin() {
         pinMode(pin, INPUT);
@@ -27,11 +29,12 @@ public:
     float getMagneticField() { return result; }
 };
 
-// 🔹 คลาสสำหรับ LCD
+// คลาสสำหรับ LCD
 class LCD_Display {
 private:
     LiquidCrystal_I2C lcd;
 public:
+    int value_adc;
     LCD_Display() : lcd(0x27, 16, 2) {}
 
     void begin() {
@@ -48,10 +51,21 @@ public:
         lcd.print(voltage, 2);
         lcd.print(" V");
 
+        Serial.print("\nADC: ");
+        Serial.print(value_adc, 2);
+
+        Serial.print("\nV: ");
+        Serial.print(voltage, 2);
+        Serial.print(" V\n");
+
         lcd.setCursor(0, 1);
         lcd.print("M: ");
         lcd.print(magneticField, 2);
         lcd.print(" mT");
+
+        Serial.print("M: ");
+        Serial.print(magneticField, 2);
+        Serial.print(" mT");
     }
 
     void showMessage(const char *message) {
@@ -102,8 +116,8 @@ public:
     }
 };
 
-// 🔹 สร้างอ็อบเจ็กต์ของแต่ละคลาส
-Magnetometer sensor(A0);
+// สร้างอ็อบเจ็กต์ของแต่ละคลาส
+Magnetometer sensor(A1);
 LCD_Display display;
 Button button(7);
 
@@ -111,7 +125,7 @@ bool systemOn = false; // เริ่มต้นอยู่ในโหมด
 bool sleepMode = false;
 
 void setup() {
-    Serial.begin(19200);
+    Serial.begin(9600);
     sensor.begin();
     display.begin();
     button.begin();
@@ -146,4 +160,5 @@ void loop() {
         delay(2000);
         display.turnOff();
     }
+     delay(200); // ทำให้การแสดงผลช้าลง
 }

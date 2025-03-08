@@ -1,0 +1,169 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f5e6c8;
+    margin: 0;
+    padding-bottom: 60px; /* ป้องกัน footer บังเนื้อหา */
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #f4a100;
+    padding: 15px 20px;
+}
+
+.logo {
+    font-size: 24px;
+    font-weight: bold;
+    color: white;
+}
+
+nav ul {
+    list-style: none;
+    display: flex;
+    margin: 0;
+    padding: 0;
+}
+
+nav ul li {
+    margin: 0 15px;
+}
+
+nav ul li a {
+    text-decoration: none;
+    color: white;
+    font-size: 18px;
+}
+
+.content-box {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+    background-color: #d3c6af;
+    margin: 20px;
+    border-radius: 10px;
+}
+
+/* ปรับขนาดรูปภาพให้เหมาะสม */
+img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* Layout ของ Grid */
+.grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;  /* 2 คอลัมน์เท่าๆ กัน */
+    grid-template-rows: auto auto;
+    gap: 10px;
+    padding: 20px;
+}
+
+.grid div {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.grid .item_left {
+    grid-column: 1 / 2;
+    grid-row: 1 / span 2;
+}
+
+.grid .item_upper_right {
+    grid-column: 2 / 2;
+    grid-row: 1 / 2;
+}
+
+.grid .item_right_under {
+    grid-column: 2 / 2;
+    grid-row: 2 / 3;
+}
+
+.grid .item_down {
+    grid-column: 2 / 2;
+    grid-row: 3 / 4;
+}
+
+.grid_2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* สองคอลัมน์เท่าๆ กัน */
+    gap: 20px;
+    align-items: center;
+    justify-items: center;
+    padding: 20px;
+}
+
+
+/* ปรับขนาดรูปภาพใน section how-to-play */
+.grid_2 img {
+    max-width: 40%; /* ลดขนาดจาก 50% เหลือ 40% */
+    height: auto;
+    display: block;
+    margin: 10px auto; /* เพิ่ม margin ด้านบนล่าง */
+}
+
+.grid_2 p, 
+.content-box_2 .text-box {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    width: 100%;
+    height: 100%;
+}
+
+
+
+.grid_2 .item_left {
+    grid-column: 1 / 2;
+}
+.grid_2 .item_right {
+    grid-column: 2 / 2;
+}
+
+
+/* ปรับขนาด content-box ให้อยู่ตรงกลาง และลดขนาดภาพ */
+.content-box_2 {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 40px;
+    background-color: #d3c6af;
+    margin: 20px;
+    border-radius: 10px;
+}
+
+.content-box img {
+    width: 80%; /* ปรับขนาดภาพให้เล็กลง */
+    max-width: 300px;
+}
+
+.text-box {
+    max-width: 800px;
+}
+
+button {
+    background-color: #f4a100;
+    border: none;
+    padding: 10px 20px;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100vw;
+    text-align: center;
+    padding: 20px;
+    background-color: #f4a100;
+    color: white;
+}
