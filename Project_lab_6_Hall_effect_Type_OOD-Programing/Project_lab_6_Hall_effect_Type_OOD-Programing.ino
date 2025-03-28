@@ -25,31 +25,35 @@ public:
         result = (voltage - 2.5731) / 0.0027;
     }
 
-    float getVoltage() { return voltage; }
-    float getMagneticField() { return result; }
+    float getVoltage() { 
+      return voltage; 
+      }
+
+    float getMagneticField() { 
+      return result; 
+      }
 };
 
 // คลาสสำหรับ LCD
-class LCD_Display {
+class LCD_Display :public Magnetometer  {
 private:
-    LiquidCrystal_I2C lcd;
+    LiquidCrystal_I2C lcd_1;
 public:
-    int value_adc;
-    LCD_Display() : lcd(0x27, 16, 2) {}
+    LCD_Display() : lcd_1(0x27, 16, 2) {}
 
     void begin() {
-        lcd.init();
-        lcd.backlight();
-        lcd.setCursor(0, 0);
-        lcd.print("Hi, Welcome");
+        lcd_1.init();
+        lcd_1.backlight();
+        lcd_1.setCursor(0, 0);
+        lcd_1.print("Hi, Welcome");
     }
 
     void showValues(float voltage, float magneticField) {
-        lcd.clear();
-        lcd.setCursor(0, 0);
-        lcd.print("V: ");
-        lcd.print(voltage, 2);
-        lcd.print(" V");
+        lcd_1.clear();
+        lcd_1.setCursor(0, 0);
+        lcd_1.print("V: ");
+        lcd_1.print(voltage, 2);
+        lcd_1.print(" V");
 
         Serial.print("\nADC: ");
         Serial.print(value_adc, 2);
@@ -58,10 +62,10 @@ public:
         Serial.print(voltage, 2);
         Serial.print(" V\n");
 
-        lcd.setCursor(0, 1);
-        lcd.print("M: ");
-        lcd.print(magneticField, 2);
-        lcd.print(" mT");
+        lcd_1.setCursor(0, 1);
+        lcd_1.print("M: ");
+        lcd_1.print(magneticField, 2);
+        lcd_1.print(" mT");
 
         Serial.print("M: ");
         Serial.print(magneticField, 2);
@@ -69,16 +73,20 @@ public:
     }
 
     void showMessage(const char *message) {
-        lcd.clear();
-        lcd.setCursor(0, 0);
-        lcd.print(message);
+        lcd_1.clear();
+        lcd_1.setCursor(0, 0);
+        lcd_1.print(message);
     }
 
-    void turnOff() { lcd.noBacklight(); }
-    void turnOn() { lcd.backlight(); }
+    void turnOff() { 
+      lcd_1.noBacklight(); 
+      }
+    void turnOn() { 
+      lcd_1.backlight(); 
+      }
 };
 
-// 🔹 คลาสสำหรับปุ่มกด
+//  คลาสสำหรับปุ่มกด
 class Button {
 private:
     int pin;
@@ -117,7 +125,7 @@ public:
 };
 
 // สร้างอ็อบเจ็กต์ของแต่ละคลาส
-Magnetometer sensor(A1);
+Magnetometer sensor(A0);
 LCD_Display display;
 Button button(7);
 
