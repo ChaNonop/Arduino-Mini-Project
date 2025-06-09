@@ -10,7 +10,7 @@ struct Arm_commandPin {
   const int ShoulderPin_Vx = A2;  // พินควบคุมหัวไหล่ (อ่าน analog)
   const int ShoulderPin_Vy = A3;
 
-  const int Gripper_Pin = 2;    // พินควบคุมปากจับ (digital input)
+  const int Gripper_Pin = A5;    // พินควบคุมปากจับ (digital input)
   
   //ปุ่ม button
   const int ElbowPin_Up = 8;      // ตั้งพินสำหรับการควบคุมข้อศอก
