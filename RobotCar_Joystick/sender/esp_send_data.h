@@ -5,6 +5,9 @@
 #include "Variable.h"
 #include <ESP8266WiFi.h>
 #include <espnow.h>
+//#include <WiFi.h>
+//#include <esp_WiFi.h>
+//#include <esp_now.h>
 
 // ไลบราลี่เราเอง
 #include <MyEsp_address.h>
@@ -12,11 +15,11 @@
 extern Address mac_address;
 extern const byte *peer_address;
 
-// สร้าง struct ส่งข้อมูล
 typedef struct Data {
   int id;
   int Joy_Vx;
-  bool joy_send_button[2]; 
+  //int Joy_Vy;
+  bool joy_send_button[2];
 } Data;
 
 extern Data Data_send;
@@ -35,7 +38,13 @@ void OnDataSent(uint8_t *mac_addr, uint8_t sendStatus) {
 }
 
 void setup_esp_now() {
-  // เริ่มต้น ESP-NOW
+  // ตั้งค่า WiFi แบบไม่ให้เขียน Flash บ่อยๆ
+  WiFi.persistent(false);
+  WiFi.mode(WIFI_STA);
+  WiFi.disconnect();
+  esp_wifi_set_mac_tx_power(TX_POWER);  //set tx power
+  delay(10);
+
   while (esp_now_init() != 0) {
     Serial.println(F("ESP-NOW Init Failed... Rebooting..."));
     digitalWrite(controller.led_espNow_Pin, HIGH);
@@ -44,6 +53,7 @@ void setup_esp_now() {
     delay(100);
     ESP.restart();
   }
+
   Serial.println(F("ESP-NOW Init Success!"));
 
   esp_now_set_self_role(ESP_NOW_ROLE_CONTROLLER);
@@ -51,20 +61,21 @@ void setup_esp_now() {
   // callback สำหรับการส่ง
   esp_now_register_send_cb(OnDataSent);
 
-  // ตั้งค่า peer กับรถ
+  // ตั้งค่า peer
   esp_now_add_peer(const_cast<uint8_t *>(peer_address), ESP_NOW_ROLE_SLAVE, 6, NULL, 0);
 
   // เชื่อมสำเร็จแล้วให้ขึ้น led ค้างไว้
-  analogWrite(controller.led_espNow_Pin, 512); 
+  analogWrite(controller.led_espNow_Pin, 512);
 }
 
 void send_data() {
   Data_send.id++;
-  Data_send.Joy_Vx = controller.joy_send_Vx;                     //ดึงค่า
+  Data_send.Joy_Vx = controller.joy_send_Vx;  //ดึงค่า
+  //Data_send.Joy_Vy = controller.joy_send_Vy;
   Data_send.joy_send_button[0] = controller.joy_send_button[0];  //ดึงค่า
   Data_send.joy_send_button[1] = controller.joy_send_button[1];  //ดึงค่า
 
-  // ส่งข้อมูลไปยัง peer ที่ตั้งค่าไว้
+  // ส่งข้อมูล
   esp_now_send(0, (uint8_t *)&Data_send, sizeof(Data_send));
 }
 

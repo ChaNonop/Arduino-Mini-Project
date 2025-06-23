@@ -1,6 +1,8 @@
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
+//#include <WiFi.h>
 #include <espnow.h>
+//#include <esp_now.h>
 #include "Variable.h"
 #include "esp_send_data.h"
 
@@ -8,7 +10,7 @@ Address mac_address;
 const byte *peer_address = mac_address.Esp8266_V2;
 Data Data_send;
 Control controller;
-
+#define TX_POWER
 
 /*void printMacAddresses() {
   // แสดง MAC Address ของตัวส่ง (Sender)
@@ -35,13 +37,8 @@ void setup() {
   Serial.println("Booting Sender...");
   //printMacAddresses(); // แสดง MAC Addresses
 
-  // ตั้งค่า WiFi แบบไม่ให้เขียน Flash บ่อยๆ
-  WiFi.persistent(false);
-  WiFi.mode(WIFI_STA);
-  WiFi.disconnect();
-  delay(10);
-
   pinMode(controller.led_Vx_pin, OUTPUT);
+  //pinMode(controller.led_Vy_pin, OUTPUT);
   pinMode(controller.led_button_pin, OUTPUT);
   pinMode(controller.led_espNow_Pin, OUTPUT);
 
@@ -50,14 +47,15 @@ void setup() {
 
 void loop() {
   controller.read_adc();
+
   static unsigned long lastSend = 0;
-  if (millis() - lastSend >= 20) {  // ส่งทุก 20ms
+  if (millis() - lastSend >= 20) {  // ส่งทุก 10ms
     send_data();
     lastSend = millis();
+    Serial.printf("Send: Vx=%d, B1=%d, B2=%d\n",
+                  Data_send.Joy_Vx,
+                  Data_send.joy_send_button[0],
+                  Data_send.joy_send_button[1]);
   }
-  Serial.printf("Send: Vx=%d, B1=%d, B2=%d\n",
-                Data_send.Joy_Vx,
-                Data_send.joy_send_button[0],
-                Data_send.joy_send_button[1]);
-  delay(20); 
+  yield();
 }
