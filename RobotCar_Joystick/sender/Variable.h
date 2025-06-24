@@ -10,7 +10,7 @@ class Control {
 private:
   const uint8_t Vx_Pin = 34;  //D35
   const uint8_t Vy_Pin = 32;  //D32
-  // sampling value
+
   const uint8_t sampling = 10;
   const int16_t dead_zone1 = 99;  
   const int16_t dead_zone2 = 180; 
@@ -26,8 +26,8 @@ public:
   const uint8_t led_espNow_Pin;
   int joy_send_Vx;
   int joy_send_Vy;
-  int avgVx;
-  int avgVy;
+  int16_t avgVx;
+  int16_t avgVy;
 
   Control()
     : led_Vx_pin(33),      // GPIO 33 D33
