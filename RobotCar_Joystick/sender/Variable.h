@@ -8,93 +8,67 @@
 
 class Control {
 private:
-  const uint8_t Vx_Pin = D35;
-  const uint8_t Vy_Pin = D12;
-
-  // left right button
-  //const byte Pinbutton[2] = { D0, D1 };
-
+  const uint8_t Vx_Pin = 34;  //D35
+  const uint8_t Vy_Pin = 32;  //D32
   // sampling value
   const uint8_t sampling = 10;
-
-  // cal analog
+  const int16_t dead_zone1 = 99;  
+  const int16_t dead_zone2 = 180; 
   uint16_t sumVx = 0;
   uint16_t sumVy = 0;
 
-  int avgVx = 0;
-  int avgVy = 0;
-  const uint16_t calib = 2048;
+  const uint16_t calib = 2047;
   unsigned long lastReadTime = 0;  // บันทึกเวลาการอ่านค่าล่าสุด ควบคุมการอ่านค่าเป็นระยะ
 
 public:
-  const uint8_t led_Vx_pin;  // Pin สำหรับ LED แสดงสถานะแกน Vx
+  const uint8_t led_Vx_pin;
   const uint8_t led_Vy_pin;
-  //const uint8_t led_button_pin;  // Pin สำหรับ LED แสดงสถานะปุ่ม
-  const uint8_t led_espNow_Pin;  // Pin สำหรับ LED แสดงสถานะ ESP-NOW
+  const uint8_t led_espNow_Pin;
   int joy_send_Vx;
   int joy_send_Vy;
-  //bool joy_send_button[2];
+  int avgVx;
+  int avgVy;
 
   Control()
-    : led_Vx_pin(D34),
-      led_Vy_pin(D13),      // D5 (GPIO14)
-      led_espNow_Pin(D32),  // GPIO10 (SD3)
+    : led_Vx_pin(33),      // GPIO 33 D33
+      led_Vy_pin(27),      // GPIO 27 (D27)
+      led_espNow_Pin(25),  // GPIO 25 (D25)
       joy_send_Vx(0),
-      joy_send_Vy(0) {}
+      joy_send_Vy(0),
+      avgVx(0),
+      avgVy(0) {}
 
   void read_adc() {
     // อ่านค่าทุกๆ 10 ms
     if (millis() - lastReadTime >= 10) {
       lastReadTime = millis();  // อัปเดตเวลาการอ่านค่าล่าสุด
-
-      //joy_send_button[0] = digitalRead(Pinbutton[0]);
-      //joy_send_button[1] = digitalRead(Pinbutton[1]);
-
       sumVx = 0;
+      sumVy = 0;
+
       for (uint8_t i = 0; i < sampling; i++) {
         sumVx += analogRead(Vx_Pin);
         sumVy += analogRead(Vy_Pin);
         delayMicroseconds(100);  //หน่วงเวลาการอ่านหน่อย 1ms
       }
-
       avgVx = (sumVx / sampling) - calib;
       avgVy = (sumVy / sampling) - calib;
 
+      // จัดการ Dead-zone
+      if (abs(avgVx) < dead_zone1) avgVx = 0;
+      if (abs(avgVy) < dead_zone2) avgVy = 0;
 
-      // ถ้าค่าอยู่ใกล้จุดศูนย์กลาง 512 มาก ให้ถือว่าเป็น 512 กันค่าคลาดเคลื่อน
-      if (abs(avgVx - calib) <= 5) {
-      }
-      if (abs(avgVy - calib) <= 5) {}
-
-      // Map ค่า 0-4096 เป็น -512 ถึง 512
-      joy_send_Vx = map(avgVx, -2046, 2046, -1023, 1023);
-      joy_send_Vy = map(avgVy, -2046, 2046, -1023, 1023);
+      // Map ค่า 0-4096 เป็น -1023 ถึง 1023
+      joy_send_Vx = map(avgVx, -2048, 2048, -1023, 1023);
+      joy_send_Vy = map(avgVy, -2048, 2048, -1023, 1023);
       led();
-      yield();
     }
   }
 
   void led() {
-    if (joy_send_Vx > 0 + 5 || joy < 0 - 5) {  // ถ้า Joystick ขยับหรือ่านค่าได้ ติดไฟ led
-      digitalWrite(led_Vx_pin, HIGH);
-    } else {
-      digitalWrite(led_Vx_pin, LOW);
-    }
-    
-    if (joy_send_Vy > 0 + 5 || joy_send_Vy < 0 - 5) {  // ถ้า Joystick ขยับหรือ่านค่าได้ ติดไฟ led
-    digitalWrite(led_Vy_pin, HIGH);
-  } else {
-    digitalWrite(led_Vy_pin, LOW);
+    // ถ้า Joystick ขยับ ให้เปิดไฟ LED
+    digitalWrite(led_Vx_pin, (joy_send_Vx != 0));
+    digitalWrite(led_Vy_pin, (joy_send_Vy != 0));
   }
-  /*
-    // joy_send_button ถูกกลับค่า (true = กด)
-    if (joy_send_button[0] || joy_send_button[1] == 0) {
-      digitalWrite(led_button_pin, HIGH);
-    } else {
-      digitalWrite(led_button_pin, LOW);
-    }
-  }
-  */
 };
 
 #endif
