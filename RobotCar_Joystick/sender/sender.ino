@@ -1,15 +1,17 @@
 #include <Arduino.h>
-#include <ESP8266WiFi.h>
-//#include <WiFi.h>
-#include <espnow.h>
-//#include <esp_now.h>
+//#include <ESP8266WiFi.h>
+#include <WiFi.h>
+//#include <espnow.h>
+#include <esp_now.h>
 #include "Variable.h"
 #include "esp_send_data.h"
 
 Address mac_address;
-const byte *peer_address = mac_address.Esp8266_V2;
+const byte *peer_address = mac_address.Esp8266_V3;
+
 Data Data_send;
 Control controller;
+
 #define TX_POWER
 
 /*void printMacAddresses() {
@@ -38,10 +40,9 @@ void setup() {
   //printMacAddresses(); // แสดง MAC Addresses
 
   pinMode(controller.led_Vx_pin, OUTPUT);
-  //pinMode(controller.led_Vy_pin, OUTPUT);
-  pinMode(controller.led_button_pin, OUTPUT);
-  pinMode(controller.led_espNow_Pin, OUTPUT);
-
+  pinMode(controller.led_Vy_pin, OUTPUT);
+  //pinMode(controller.led_button_pin, OUTPUT);
+  //pinMode(controller.led_espNow_Pin, OUTPUT);
   Serial.println(F("Setup Complete...."));
 }
 
@@ -49,7 +50,7 @@ void loop() {
   controller.read_adc();
 
   static unsigned long lastSend = 0;
-  if (millis() - lastSend >= 20) {  // ส่งทุก 10ms
+  if (millis() - lastSend >= 15) {  // ส่งทุก 15ms
     send_data();
     lastSend = millis();
     Serial.printf("Send: Vx=%d, B1=%d, B2=%d\n",

@@ -7,7 +7,7 @@
 EspNowControlProtocol* robot;
 
 void setup() {
-    Serial.begin(19200);
+    Serial.begin(115200);
     Serial.println(F("Initializing Receiver..."));
 
     robot = EspNowControlProtocol::getInstance();

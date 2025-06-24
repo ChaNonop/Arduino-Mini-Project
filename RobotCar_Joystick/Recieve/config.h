@@ -11,6 +11,8 @@ public:
   // Pin Enable สำหรับ PWM, D3 และ D7
   const uint8_t Pin_EN[2]  = { 0, 13 }; // GPIO 0(D3), 13(D7)
 
+  const uint8_t Pin_ir = 15; // D8
+
   int16_t joy_Vx = 0;
   int16_t joy_Vy = 0;
 
@@ -31,8 +33,8 @@ public:
   }
 
   void calib() {
-    int16_t speed = map(joy_Vx, -512, 512, -255, 255);
-    int16_t turn  = map(joy_Vy, -512, 512, -255, 255);
+    int16_t speed = map(joy_Vx, -1023, 1023, 0, 1023);
+    int16_t turn  = map(joy_Vy, -1023, 1023, -255, 255);
 
     // คำนวณความเร็วล้อซ้าย-ขวา และจำกัดค่าให้อยู่ในช่วง -255 ถึง 255
     speedL = constrain(speed - turn, -255, 255);
@@ -40,12 +42,13 @@ public:
   }
 
   void drive_motor(int left, int right) {
-    // ซ้าย
+
+    // ล้อซ้าย
     digitalWrite(Pin_IN[0], left > 0);
     digitalWrite(Pin_IN[1], left < 0);
     analogWrite(Pin_EN[0], abs(left));
 
-    // ขวา
+    // ล้อขวา
     digitalWrite(Pin_IN[2], right > 0);
     digitalWrite(Pin_IN[3], right < 0);
     analogWrite(Pin_EN[1], abs(right));

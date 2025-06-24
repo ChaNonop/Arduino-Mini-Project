@@ -9,7 +9,8 @@ public:
   typedef struct Data {
     int id;
     int Joy_Vx;
-    bool joy_send_button[2];
+    int Joy_Vy;
+    //bool joy_send_button[2];
   } Data;
 
   Data incomingData;
@@ -23,8 +24,10 @@ public:
     memcpy(&(instance->incomingData), data, len);
 
     instance->joy_Vx = instance->incomingData.Joy_Vx;
+    instance->joy_Vy = instance->incomingData.Joy_Vy;
+
     instance->calib();
-    instance->drive_motor(instance->speedL, instance->speedR);
+    instance->drive_motor(instance->speedL, instance->speedR); //ส่งค่าไปยังฟังก์ชั่น
   }
 
   static EspNowControlProtocol* getInstance() {

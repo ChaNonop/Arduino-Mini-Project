@@ -3,11 +3,11 @@
 
 #include <Arduino.h>
 #include "Variable.h"
-#include <ESP8266WiFi.h>
-#include <espnow.h>
-//#include <WiFi.h>
-//#include <esp_WiFi.h>
-//#include <esp_now.h>
+//#include <ESP8266WiFi.h>
+//#include <espnow.h>
+#include <WiFi.h>
+#include <esp_WiFi.h>
+#include <esp_now.h>
 
 // ไลบราลี่เราเอง
 #include <MyEsp_address.h>
@@ -18,8 +18,8 @@ extern const byte *peer_address;
 typedef struct Data {
   int id;
   int Joy_Vx;
-  //int Joy_Vy;
-  bool joy_send_button[2];
+  int Joy_Vy;
+  //bool joy_send_button[2];
 } Data;
 
 extern Data Data_send;
@@ -38,7 +38,6 @@ void OnDataSent(uint8_t *mac_addr, uint8_t sendStatus) {
 }
 
 void setup_esp_now() {
-  // ตั้งค่า WiFi แบบไม่ให้เขียน Flash บ่อยๆ
   WiFi.persistent(false);
   WiFi.mode(WIFI_STA);
   WiFi.disconnect();
@@ -71,9 +70,9 @@ void setup_esp_now() {
 void send_data() {
   Data_send.id++;
   Data_send.Joy_Vx = controller.joy_send_Vx;  //ดึงค่า
-  //Data_send.Joy_Vy = controller.joy_send_Vy;
-  Data_send.joy_send_button[0] = controller.joy_send_button[0];  //ดึงค่า
-  Data_send.joy_send_button[1] = controller.joy_send_button[1];  //ดึงค่า
+  Data_send.Joy_Vy = controller.joy_send_Vy;
+  //Data_send.joy_send_button[0] = controller.joy_send_button[0];  //ดึงค่า
+  //Data_send.joy_send_button[1] = controller.joy_send_button[1];  //ดึงค่า
 
   // ส่งข้อมูล
   esp_now_send(0, (uint8_t *)&Data_send, sizeof(Data_send));
