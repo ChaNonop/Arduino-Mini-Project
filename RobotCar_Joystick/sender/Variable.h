@@ -21,20 +21,20 @@ private:
   unsigned long lastReadTime = 0;  // บันทึกเวลาการอ่านค่าล่าสุด ควบคุมการอ่านค่าเป็นระยะ
 
 public:
-  const uint8_t led_Vx_pin;
-  const uint8_t led_Vy_pin;
+  const uint8_t led_left_pin;
+  const uint8_t led_right_pin;
   const uint8_t led_espNow_Pin;
-  int joy_send_Vx;
-  int joy_send_Vy;
+  int joy_send_left;
+  int joy_send_right;
   int16_t avgVx;
   int16_t avgVy;
 
   Control()
-    : led_Vx_pin(33),      // GPIO 33 D33
-      led_Vy_pin(27),      // GPIO 27 (D27)
+    : led_left_pin(33),      // GPIO 33 D33
+      led_right_pin(27),      // GPIO 27 (D27)
       led_espNow_Pin(25),  // GPIO 25 (D25)
-      joy_send_Vx(0),
-      joy_send_Vy(0),
+      joy_send_left(0),
+      joy_send_right(0),
       avgVx(0),
       avgVy(0) {}
 
@@ -58,16 +58,16 @@ public:
       if (abs(avgVy) < dead_zone2) avgVy = 0;
 
       // Map ค่า 0-4096 เป็น -1023 ถึง 1023
-      joy_send_Vx = map(avgVx, -2048, 2048, -1023, 1023);
-      joy_send_Vy = map(avgVy, -2048, 2048, -1023, 1023);
+      joy_send_left = map(avgVx, -2048, 2048, -1023, 1023);
+      joy_send_right = map(avgVy, -2048, 2048, -1023, 1023);
       led();
     }
   }
 
   void led() {
     // ถ้า Joystick ขยับ ให้เปิดไฟ LED
-    digitalWrite(led_Vx_pin, (joy_send_Vx != 0));
-    digitalWrite(led_Vy_pin, (joy_send_Vy != 0));
+    digitalWrite(led_left_pin, (joy_send_left != 0));
+    digitalWrite(led_right_pin, (joy_send_right != 0));
   }
 };
 

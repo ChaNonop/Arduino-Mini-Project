@@ -18,8 +18,8 @@ void setup() {
   
   setup_esp_now(peer_address);
 
-  pinMode(controller.led_Vx_pin, OUTPUT);
-  pinMode(controller.led_Vy_pin, OUTPUT);
+  pinMode(controller.led_left_pin, OUTPUT);
+  pinMode(controller.led_right_pin, OUTPUT);
   pinMode(controller.led_espNow_Pin, OUTPUT);
   Serial.println(F("Setup Complete...."));
 }
@@ -32,7 +32,7 @@ void loop() {
     lastSend = millis();
     //Serial.printf("AnalogVx : %d,AnalogVy : %d\n", controller.avgVx, controller.avgVy);
     send_data(&Data_send, &controller, peer_address);
-    Serial.printf("Send: Vx=%d, Vy=%d\n",Data_send.Joy_Vx,Data_send.Joy_Vy);
+    Serial.printf("Send: Vx=%d, Vy=%d\n",Data_send.joy_left,Data_send.joy_right);
   }
   yield();
 }

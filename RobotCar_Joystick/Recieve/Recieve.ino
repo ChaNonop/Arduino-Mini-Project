@@ -33,8 +33,8 @@ void loop() {
     if (millis() - lastCheck > 40) {
         lastCheck = millis();        
         Serial.printf("Last received - Vx: %d, Vy: %d\n", 
-                     robot->incomingData.Joy_Vx, 
-                     robot->incomingData.Joy_Vy);
+                     robot->incomingData.joy_left, 
+                     robot->incomingData.joy_right);
     }
     yield(); 
 }

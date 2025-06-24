@@ -8,8 +8,8 @@ class EspNowControlProtocol : public control {
 public:
   typedef struct Data {
     int id;
-    int Joy_Vx = 0;
-    int Joy_Vy = 0;
+    int joy_left = 0;
+    int joy_right = 0;
   } Data_t;
 
   Data_t incomingData;
@@ -22,8 +22,8 @@ public:
     }
     memcpy(&(instance->incomingData), data, len);
 
-    instance->joy_Vx = instance->incomingData.Joy_Vx;
-    instance->joy_Vy = instance->incomingData.Joy_Vy;
+    instance->joy_left = instance->incomingData.joy_left;
+    instance->joy_right = instance->incomingData.joy_right;
 
     instance->cal_speed();
     instance->drive_motor();

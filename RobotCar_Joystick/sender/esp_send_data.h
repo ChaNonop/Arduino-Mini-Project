@@ -12,8 +12,8 @@
 
 typedef struct Data {
   int id;
-  int Joy_Vx;
-  int Joy_Vy;
+  int joy_left = 0;
+  int joy_right = 0;
 } Data_t;
 
 extern Control controller;
@@ -58,8 +58,8 @@ void setup_esp_now(const uint8_t* peer_address) {
 
 void send_data(Data_t* data, Control* controller, const uint8_t* peer_address) {
   data->id++;
-  data->Joy_Vx = controller->joy_send_Vx;
-  data->Joy_Vy = controller->joy_send_Vy;
+  data->joy_left = controller->joy_send_left;
+  data->joy_right = controller->joy_send_right;
   // ส่งข้อมูล
   esp_now_send(peer_address, (uint8_t*)data, sizeof(Data_t));
 }
