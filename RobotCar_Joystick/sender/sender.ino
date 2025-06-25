@@ -28,7 +28,7 @@ void loop() {
   controller.read_adc();
 
   static unsigned long lastSend = 0;
-  if (millis() - lastSend >= 30) {  // ส่งทุก 30ms
+  if (millis() - lastSend >= 40) {  // ส่งทุก 40ms
     lastSend = millis();
     //Serial.printf("AnalogVx : %d,AnalogVy : %d\n", controller.avgVx, controller.avgVy);
     send_data(&Data_send, &controller, peer_address);

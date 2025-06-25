@@ -29,12 +29,16 @@ void setup() {
 }
 
 void loop() {
-    static unsigned long lastCheck = 0;
-    if (millis() - lastCheck > 40) {
-        lastCheck = millis();        
-        Serial.printf("Last received - Vx: %d, Vy: %d\n", 
-                     robot->incomingData.joy_left, 
-                     robot->incomingData.joy_right);
-    }
-    yield(); 
+  static unsigned long lastCheck = 0;
+  if (millis() - lastCheck > 40) {
+    lastCheck = millis();
+    Serial.printf("Last received - Vx: %d, Vy: %d\n",
+                  robot->incomingData.joy_left,
+                  robot->incomingData.joy_right);
+  }
+  // ถ้ามีของมาข้วางหน้าควบคุมมอเตอร์
+  robot->cal_speed();
+  robot->drive_motor();
+
+  yield();
 }

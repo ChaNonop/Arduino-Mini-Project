@@ -16,8 +16,11 @@ public:
 
   //int16_t speedL = 0;
   //int16_t speedR = 0;
-  bool blocking = 1;
+  bool blocking_current = 1;
   uint16_t back = 100;
+  unsigned long Detected_time = 0;
+  bool isBackingUp = false;
+  const unsigned long Back_time = 500;  // เวลาที่จะถอยหลัง (มิลลิวินาที)
 
   control() {}
 
@@ -34,17 +37,29 @@ public:
   }
 
   void cal_speed() {
-    blocking = digitalRead(Pin_ir);
-    //int16_t speed = map(joy_left, -1023, 1023, -255, 255);
-    //int16_t turn = map(joy_right, -1023, 1023, -255, 255);
+    blocking_current = digitalRead(Pin_ir);
 
-    // คำนวณความเร็วล้อซ้าย-ขวา และจำกัดค่าให้อยู่ในช่วง -255 ถึง 255
-    //speedL = constrain(speed - turn, -255, 255);
-    //speedR = constrain(speed + turn, -255, 255);
+    // ถ้ามีสิ่งกีดขวางและยังไม่ได้เริ่มถอยหลัง
+    if (blocking_current == LOW && !isBackingUp) {
+      blocking_current = LOW;
+      isBackingUp = true;
+      Detected_time = millis();
+    }
+    // ถ้ากำลังถอยหลังและครบเวลาที่กำหนด
+    else if (isBackingUp && (millis() - Detected_time >= Back_time)) {
+      isBackingUp = false;
+      blocking_current = HIGH;
+    }
+
+    // ถ้าไม่มีการถอยหลัง ให้อัปเดตค่าความเร็วตามปกติ
+    if (!isBackingUp) {
+      joy_left = joy_left;
+      joy_right = joy_right;
+    }
   }
 
   void drive_motor() {
-    if (blocking == HIGH) {
+    if (blocking_current == HIGH) {
       if (joy_left > 0) {
         // ล้อซ้าย
         digitalWrite(Pin_IN[0], HIGH);
@@ -80,7 +95,7 @@ public:
 
 /*
   void cal_speed() {
-    blocking = digitalRead(Pin_ir);
+    blocking_current = digitalRead(Pin_ir);
     int16_t speed = map(joy_left, -1023, 1023, -255, 255);
     int16_t turn = map(joy_right, -1023, 1023, -255, 255);
 
@@ -90,7 +105,7 @@ public:
   }
 
   void drive_motor() {
-    if (blocking) {
+    if (blocking_current) {
       if (speedL > 0) {
         // ล้อซ้าย
         digitalWrite(Pin_IN[0], HIGH);
