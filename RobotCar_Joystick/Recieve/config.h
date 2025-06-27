@@ -20,7 +20,7 @@ public:
   int16_t joy_right = 0;   // ค่าจอยสติ๊กขวา (-1023 ถึง 1023)
   
   bool obstacle_detected = false;
-  const uint16_t back_speed = 500;
+  const uint16_t back_speed = 800;
   unsigned long backup_start_time = 0;
   const unsigned long BACKUP_DURATION = 500;
   unsigned long last_data_time = 0;
