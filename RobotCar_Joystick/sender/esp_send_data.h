@@ -30,7 +30,7 @@ void OnDataSent(const uint8_t* mac_addr, esp_now_send_status_t status) {
     sendSuccess = false;
     sendFailed = true;
     digitalWrite(controller.led_espNow_Pin, LOW);
-    Serial.printf("Send Fail\n");
+    //Serial.printf("Send Fail\n");
   }
 }
 
@@ -39,7 +39,7 @@ void setup_esp_now(const uint8_t* peer_address) {
   WiFi.disconnect();
 
   if (esp_now_init() != ESP_OK) {
-    delay(1000);
+    delay(1500);
     ESP.restart();
   }
   esp_now_register_send_cb(OnDataSent);
