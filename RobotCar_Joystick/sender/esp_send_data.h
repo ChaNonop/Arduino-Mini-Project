@@ -3,7 +3,7 @@
 
 #include <Arduino.h>
 #include <WiFi.h>
-#include <esp_WiFi.h>
+//#include <esp_WiFi.h>
 #include <esp_now.h>
 
 #include "Variable.h"
@@ -17,14 +17,20 @@ typedef struct Data {
 
 extern Control controller;
 
+// ใช้ volatile สำหรับแฟล็กที่แชร์ระหว่าง interrupt และ loop
+volatile bool sendSuccess = false;
+volatile bool sendFailed = false;
+unsigned long lastLedChange = 0;
+
 void OnDataSent(const uint8_t* mac_addr, esp_now_send_status_t status) {
   if (status == ESP_NOW_SEND_SUCCESS) {
+    sendSuccess = true;
+    sendFailed = false;
     digitalWrite(controller.led_espNow_Pin, HIGH);
   } else {
-    digitalWrite(controller.led_espNow_Pin, HIGH);
-    delay(10);
+    sendSuccess = false;
+    sendFailed = true;
     digitalWrite(controller.led_espNow_Pin, LOW);
-    delay(10);
     Serial.println("Send Fail");
   }
 }
@@ -34,7 +40,6 @@ void setup_esp_now(const uint8_t* peer_address) {
   WiFi.disconnect();
 
   if (esp_now_init() != ESP_OK) {
-    Serial.println(F("ESP-NOW Init Failed... Rebooting..."));
     delay(1000);
     ESP.restart();
   }
@@ -46,10 +51,22 @@ void setup_esp_now(const uint8_t* peer_address) {
   peerInfo.encrypt = false;
 
   if (esp_now_add_peer(&peerInfo) != ESP_OK) {
-    Serial.println(F("Failed to add peer"));
+    //Serial.println(F("Failed to add peer"));
     return;
   }
-  Serial.println(F("ESP-NOW Init Success!"));
+  //Serial.println(F("ESP-NOW Init Success!"));
+}
+
+void update_led_status() {
+  unsigned long now = millis();
+  
+  if (sendFailed && (now - lastLedChange > 100)) {
+    digitalWrite(controller.led_espNow_Pin, !digitalRead(controller.led_espNow_Pin));
+    lastLedChange = now;
+  } 
+  else if (sendSuccess) {
+    digitalWrite(controller.led_espNow_Pin, HIGH);
+  }
 }
 
 void send_data(Data_t* data, Control* controller, const uint8_t* peer_address) {

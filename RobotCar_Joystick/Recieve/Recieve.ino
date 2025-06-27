@@ -25,7 +25,6 @@ void setup() {
 }
 void loop() {
   static unsigned long lastPrint = 0;
-  
   /*if (millis() - lastPrint > 100) {
     lastPrint = millis();
     Serial.printf("Status - L: %d, R: %d, Obstacle: %d\n", robot->joy_left, robot->joy_right, robot->obstacle_detected);
