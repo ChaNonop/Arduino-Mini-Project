@@ -31,7 +31,7 @@ void loop() {
   if (millis() - lastSend >= 50) {
     lastSend = millis();
     send_data(&Data_send, &controller, peer_address);
-    Serial.printf("Send: L=%d, R=%d\n", Data_send.joy_left, Data_send.joy_right);
+    Serial.printf("Send: L = %d, R = %d\n", Data_send.joy_left, Data_send.joy_right);
   }
   yield();
 }

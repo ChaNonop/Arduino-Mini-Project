@@ -41,14 +41,14 @@ public:
 
   void setupEspNow() {
     if (esp_now_init() != 0) {
-      Serial.println(F("ESP-NOW Init Failed. Rebooting..."));
+      //Serial.println(F("ESP-NOW Init Failed. Rebooting..."));
       delay(1000);
       ESP.restart();
     }
     
     esp_now_set_self_role(ESP_NOW_ROLE_COMBO);
     esp_now_register_recv_cb(OnDataRecv);
-    Serial.println(F("ESP-NOW Ready"));
+    //Serial.println(F("ESP-NOW Ready"));
   }
 };
 

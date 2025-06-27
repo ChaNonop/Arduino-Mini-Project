@@ -6,14 +6,14 @@
 EspNowControlProtocol* robot;
 
 void setup() {
-  Serial.begin(115200);
-  Serial.println(F("Receiver Starting..."));
+  //Serial.begin(115200);
+  //Serial.println(F("Receiver Starting..."));
   robot = EspNowControlProtocol::getInstance();
   WiFi.mode(WIFI_STA);
   WiFi.disconnect();
 
-  Serial.print(F("Receiver MAC: "));
-  Serial.println(WiFi.macAddress());
+  //Serial.print(F("Receiver MAC: "));
+  //Serial.println(WiFi.macAddress());
 
   analogWriteFreq(25000);
   analogWriteRange(1023);
@@ -25,10 +25,12 @@ void setup() {
 }
 void loop() {
   static unsigned long lastPrint = 0;
-  if (millis() - lastPrint > 100) {
+  
+  /*if (millis() - lastPrint > 100) {
     lastPrint = millis();
     Serial.printf("Status - L: %d, R: %d, Obstacle: %d\n", robot->joy_left, robot->joy_right, robot->obstacle_detected);
-  }
+  }*/
+
   robot->drive_motor();
   yield();
 }
