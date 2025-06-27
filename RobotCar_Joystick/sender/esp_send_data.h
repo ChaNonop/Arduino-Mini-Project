@@ -3,7 +3,6 @@
 
 #include <Arduino.h>
 #include <WiFi.h>
-//#include <esp_WiFi.h>
 #include <esp_now.h>
 
 #include "Variable.h"
@@ -31,7 +30,7 @@ void OnDataSent(const uint8_t* mac_addr, esp_now_send_status_t status) {
     sendSuccess = false;
     sendFailed = true;
     digitalWrite(controller.led_espNow_Pin, LOW);
-    Serial.println("Send Fail");
+    Serial.printf("Send Fail\n");
   }
 }
 

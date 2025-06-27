@@ -11,12 +11,12 @@ private:
   const uint8_t Vx_Pin = 34;  //D34
   const uint8_t Vy_Pin = 32;  //D32
 
-  const uint8_t sampling = 5;
-  const int16_t dead_zone1 = 50;
-  const int16_t dead_zone2 = 50;
-  const int16_t calib_L = 1960;
-  const int16_t calib_R = 1860;
+  const uint8_t sampling = 10;
+  const int16_t dead_zone1 = 100;
+  const int16_t dead_zone2 = 204;
 
+  const int16_t calib_L = 2049;
+  const int16_t calib_R = 2049;
   unsigned long lastReadTime = 0;  // บันทึกเวลาการอ่านค่าล่าสุด ควบคุมการอ่านค่าเป็นระยะ
 
 public:
@@ -25,8 +25,8 @@ public:
   const uint8_t led_espNow_Pin;
   volatile int joy_send_left;
   volatile int joy_send_right;
-  uint32_t setVx;
-  uint32_t setVy;
+  int32_t setVx;
+  int32_t setVy;
 
   Control()
     : led_left_pin(33),    // GPIO 33 D33
@@ -36,11 +36,11 @@ public:
       joy_send_right(0),
       setVx(0),
       setVy(0) {}
-      
+
   void read_adc() {
     // อ่านค่าทุกๆ 1 ms
     if (micros() - lastReadTime >= 100) {
-      lastReadTime = micros();  // อัปเดตเวลาการอ่านค่าล่าสุด
+      lastReadTime = micros(); 
       uint32_t sumVx = 0;
       uint32_t sumVy = 0;
 
@@ -51,15 +51,15 @@ public:
       uint32_t avgVx = (sumVx / sampling);
       uint32_t avgVy = (sumVy / sampling);
 
-      // คำนวณค่า offset จากจุดศูนย์กลาง
-      int32_t setVx = avgVx - calib_L;
-      int32_t setVy = avgVy - calib_R;
+      // คำนวณค่า set จากจุดศูนย์กลาง
+      setVx = avgVx - calib_L;
+      setVy = avgVy - calib_R;
 
-      if (abs(setVx) < dead_zone1) avgVx = 0;
-      if (abs(setVy) < dead_zone2) avgVy = 0;
+      if (abs(setVx) < dead_zone1) setVx = 0;
+      if (abs(setVy) < dead_zone2) setVy = 0;
 
-      joy_send_left = map(setVx, -2049, 2049, -1023, 1023);
-      joy_send_right = map(setVy, -2049, -2049, -1023, 1023);
+      joy_send_left = map(setVx, -calib_L, calib_L, -1023, 1023);
+      joy_send_right = map(setVy, -calib_R, calib_R, -1023, 1023);
 
       int last_joy_left = 0;
       int last_joy_right = 0;

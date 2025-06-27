@@ -28,8 +28,8 @@ void loop() {
     lastSend = millis();
     send_data(&Data_send, &controller, peer_address);
     Serial.printf("Analog: L = %d, R = %d\n", controller.setVx, controller.setVy);
-    //Serial.printf("Send: L = %d, R = %d\n", Data_send.joy_left, Data_send.joy_right);
+    Serial.printf("Send: L = %d, R = %d\n", Data_send.joy_left, Data_send.joy_right);
   }
-  update_led_status();  // อัปเดตสถานะ LED แบบ non-blocking
+  update_led_status(); 
   yield();
 }
