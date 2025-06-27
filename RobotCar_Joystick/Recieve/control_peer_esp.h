@@ -1,5 +1,5 @@
-#ifndef ESPNOW_CONTROL_H
-#define ESPNOW_CONTROL_H
+#ifndef CONTROL_PEER_ESP_H
+#define CONTROL_PEER_ESP_H
 
 #include "config.h"
 #include <espnow.h>
@@ -7,26 +7,31 @@
 class EspNowControlProtocol : public control {
 public:
   typedef struct Data {
-    int id;
-    int joy_left = 0;
-    int joy_right = 0;
-  } Data_t;
+    int32_t id;
+    int16_t joy_left;
+    int16_t joy_right;
+  } __attribute__((packed)) Data_t;
 
   Data_t incomingData;
 
   static void OnDataRecv(uint8_t* mac, uint8_t* data, uint8_t len) {
-    EspNowControlProtocol* instance = EspNowControlProtocol::getInstance();
-    // ตรวจสอบ instance และขนาดข้อมูลถูกมัย
-    if (!instance || len != sizeof(Data_t)) {
+    if (len != sizeof(Data_t)) {
+      return;
+    }
+    
+    if (!esp_now_is_peer_exist(mac)) {
+        esp_now_add_peer(mac, ESP_NOW_ROLE_COMBO, 1, NULL, 0);
+    }
+
+    EspNowControlProtocol* instance = getInstance();
+    if (!instance) {
       return;
     }
     memcpy(&(instance->incomingData), data, len);
 
     instance->joy_left = instance->incomingData.joy_left;
     instance->joy_right = instance->incomingData.joy_right;
-
-    instance->cal_speed();
-    instance->drive_motor();
+    instance->last_data_time = millis();
   }
 
   static EspNowControlProtocol* getInstance() {
@@ -40,8 +45,10 @@ public:
       delay(1000);
       ESP.restart();
     }
-    esp_now_set_self_role(ESP_NOW_ROLE_SLAVE);
+    
+    esp_now_set_self_role(ESP_NOW_ROLE_COMBO);
     esp_now_register_recv_cb(OnDataRecv);
+    Serial.println(F("ESP-NOW Ready"));
   }
 };
 

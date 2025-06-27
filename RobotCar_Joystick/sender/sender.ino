@@ -28,11 +28,10 @@ void loop() {
   controller.read_adc();
 
   static unsigned long lastSend = 0;
-  if (millis() - lastSend >= 40) {  // ส่งทุก 40ms
+  if (millis() - lastSend >= 50) {
     lastSend = millis();
-    //Serial.printf("AnalogVx : %d,AnalogVy : %d\n", controller.avgVx, controller.avgVy);
     send_data(&Data_send, &controller, peer_address);
-    Serial.printf("Send: Vx=%d, Vy=%d\n",Data_send.joy_left,Data_send.joy_right);
+    Serial.printf("Send: L=%d, R=%d\n", Data_send.joy_left, Data_send.joy_right);
   }
   yield();
 }

@@ -1,3 +1,5 @@
+// config.h
+
 #ifndef CONFIG_H
 #define CONFIG_H
 
@@ -5,26 +7,32 @@
 
 class control {
 public:
-  // D1, D2 มอเตอร์ซ้าย || D5, D6 สำหรับมอเตอร์ขวา
-  const uint8_t Pin_IN[4] = { 13, 15, 14, 12 };  // GPIO 13(D7), 15(D8), 14(D5), 12(D6)
+  // ขาควบคุมมอเตอร์
+  const uint8_t Pin_IN[4] = {15, 13, 12, 14};  // IN1, IN2, IN3, IN4
+  const uint8_t Pin_EN[2] = {5, 4};            // ENA, ENB
+  
+  // ขาเซ็นเซอร์ Ultrasonic
+  const uint8_t Pin_trig = 1; // ต่อกับขา TX (GPIO1)
+  const uint8_t Pin_echo = 3; // ต่อกับขา RX (GPIO3)
 
-  const uint8_t Pin_EN[2] = { 5, 4 };  // GPIO 5(D1),GPIO 4(D2)
-  const uint8_t Pin_ir = 2;            // D4
+  // ตัวแปรควบคุม
+  int16_t joy_left = 0;    // ค่าจอยสติ๊กซ้าย (-1023 ถึง 1023)
+  int16_t joy_right = 0;   // ค่าจอยสติ๊กขวา (-1023 ถึง 1023)
+  
+  bool obstacle_detected = false;
+  const uint16_t back_speed = 500;
+  unsigned long backup_start_time = 0;
+  const unsigned long BACKUP_DURATION = 500;
+  unsigned long last_data_time = 0;
+  const unsigned long DATA_TIMEOUT = 1000;
 
-  int16_t joy_left = 0;   // Forward/Backward
-  int16_t joy_right = 0;  // Left/Right (Turn)
-
-  //int16_t speedL = 0;
-  //int16_t speedR = 0;
-  bool blocking_current = 1;
-  uint16_t back = 100;
-  unsigned long Detected_time = 0;
-  bool isBackingUp = false;
-  const unsigned long Back_time = 500;  // เวลาที่จะถอยหลัง (มิลลิวินาที)
+  long duration;
+  int distance;
+  const int distance_threshold = 15; // ระยะที่จะให้เริ่มถอย (หน่วยเป็น cm)
 
   control() {}
 
-  void init_motor_pins() {
+  void init_pins() {
     for (uint8_t i = 0; i < 4; i++) {
       pinMode(Pin_IN[i], OUTPUT);
       digitalWrite(Pin_IN[i], LOW);
@@ -33,107 +41,93 @@ public:
       pinMode(Pin_EN[i], OUTPUT);
       digitalWrite(Pin_EN[i], LOW);
     }
-    pinMode(Pin_ir, INPUT_PULLUP);
+    pinMode(Pin_trig, OUTPUT);
+    pinMode(Pin_echo, INPUT);
+  }
+  void check_distance() {
+    // ส่งสัญญาณ Trigger
+    digitalWrite(Pin_trig, LOW);
+    delayMicroseconds(2);
+    digitalWrite(Pin_trig, HIGH);
+    delayMicroseconds(10);
+    digitalWrite(Pin_trig, LOW);
+    
+    // อ่านค่า Echo และคำนวณระยะทาง
+    duration = pulseIn(Pin_echo, HIGH);
+    distance = duration * 0.034 / 2; // คำนวณระยะทางเป็นเซนติเมตร
+  }
+  void check_obstacle() {
+    check_distance(); 
+
+    // ตรวจสอบว่าเจอสของขวางมัย
+    if (distance < distance_threshold && distance > 0 && !obstacle_detected) {
+      obstacle_detected = true;
+      backup_start_time = millis();
+    }
+    
+    // ตรวจสอบว่าหมดเวลาถอยหลังหรือยัง
+    if (obstacle_detected && (millis() - backup_start_time >= BACKUP_DURATION)) {
+      obstacle_detected = false;
+    }
   }
 
-  void cal_speed() {
-    blocking_current = digitalRead(Pin_ir);
-
-    // ถ้ามีสิ่งกีดขวางและยังไม่ได้เริ่มถอยหลัง
-    if (blocking_current == LOW && !isBackingUp) {
-      blocking_current = LOW;
-      isBackingUp = true;
-      Detected_time = millis();
-    }
-    // ถ้ากำลังถอยหลังและครบเวลาที่กำหนด
-    else if (isBackingUp && (millis() - Detected_time >= Back_time)) {
-      isBackingUp = false;
-      blocking_current = HIGH;
-    }
-
-    // ถ้าไม่มีการถอยหลัง ให้อัปเดตค่าความเร็วตามปกติ
-    if (!isBackingUp) {
-      joy_left = joy_left;
-      joy_right = joy_right;
+  void check_timeout() {
+    if (millis() - last_data_time > DATA_TIMEOUT) {
+      joy_left = 0;
+      joy_right = 0;
     }
   }
 
   void drive_motor() {
-    if (blocking_current == HIGH) {
-      if (joy_left > 0) {
-        // ล้อซ้าย
+    check_obstacle();
+    check_timeout();
+
+    if (obstacle_detected) {
+      // โหมดถอยหลังเมื่อเจอของ
+      digitalWrite(Pin_IN[0], LOW);
+      digitalWrite(Pin_IN[1], HIGH);
+      analogWrite(Pin_EN[0], back_speed);
+      
+      digitalWrite(Pin_IN[2], LOW);
+      digitalWrite(Pin_IN[3], HIGH);
+      analogWrite(Pin_EN[1], back_speed);
+    } 
+    else {
+      // ล้อซ้าย
+      if (joy_left > 10) {
         digitalWrite(Pin_IN[0], HIGH);
         digitalWrite(Pin_IN[1], LOW);
         analogWrite(Pin_EN[0], abs(joy_left));
-      } else {
+      } 
+      else if (joy_left < -10) {
         digitalWrite(Pin_IN[0], LOW);
         digitalWrite(Pin_IN[1], HIGH);
         analogWrite(Pin_EN[0], abs(joy_left));
+      } 
+      else {
+        digitalWrite(Pin_IN[0], LOW);
+        digitalWrite(Pin_IN[1], LOW);
+        analogWrite(Pin_EN[0], 0);
       }
-      if (joy_right > 0) {
-        // ล้อขวา
+      
+      // ล้อขวา
+      if (joy_right > 10) {
         digitalWrite(Pin_IN[2], HIGH);
         digitalWrite(Pin_IN[3], LOW);
         analogWrite(Pin_EN[1], abs(joy_right));
-      } else {
+      } 
+      else if (joy_right < -10) {
         digitalWrite(Pin_IN[2], LOW);
         digitalWrite(Pin_IN[3], HIGH);
         analogWrite(Pin_EN[1], abs(joy_right));
+      } 
+      else {
+        digitalWrite(Pin_IN[2], LOW);
+        digitalWrite(Pin_IN[3], LOW);
+        analogWrite(Pin_EN[1], 0);
       }
-    } else {
-      digitalWrite(Pin_IN[0], LOW);
-      digitalWrite(Pin_IN[1], HIGH);
-      analogWrite(Pin_EN[0], abs(back));
-      digitalWrite(Pin_IN[2], LOW);
-      digitalWrite(Pin_IN[3], HIGH);
-      analogWrite(Pin_EN[1], abs(back));
     }
   }
 };
 
 #endif
-
-/*
-  void cal_speed() {
-    blocking_current = digitalRead(Pin_ir);
-    int16_t speed = map(joy_left, -1023, 1023, -255, 255);
-    int16_t turn = map(joy_right, -1023, 1023, -255, 255);
-
-    // คำนวณความเร็วล้อซ้าย-ขวา และจำกัดค่าให้อยู่ในช่วง -255 ถึง 255
-    //speedL = constrain(speed - turn, -255, 255);
-    //speedR = constrain(speed + turn, -255, 255);
-  }
-
-  void drive_motor() {
-    if (blocking_current) {
-      if (speedL > 0) {
-        // ล้อซ้าย
-        digitalWrite(Pin_IN[0], HIGH);
-        digitalWrite(Pin_IN[1], LOW);
-        analogWrite(Pin_EN[0], abs(speedL));
-      } else {
-        digitalWrite(Pin_IN[0], LOW);
-        digitalWrite(Pin_IN[1], HIGH);
-        analogWrite(Pin_EN[0], abs(speedL));
-      }
-      if (speedR > 0) {
-        // ล้อขวา
-        digitalWrite(Pin_IN[2], HIGH);
-        digitalWrite(Pin_IN[3], LOW);
-        analogWrite(Pin_EN[1], abs(speedR));
-      } else {
-        digitalWrite(Pin_IN[2], LOW);
-        digitalWrite(Pin_IN[3], HIGH);
-        analogWrite(Pin_EN[1], abs(speedR));
-      }
-      else {
-        digitalWrite(Pin_IN[0], LOW);
-        digitalWrite(Pin_IN[1], HIGH);
-        analogWrite(Pin_EN[0], abs(Back));
-        digitalWrite(Pin_IN[2], LOW);
-        digitalWrite(Pin_IN[3], HIGH);
-        analogWrite(Pin_EN[1], abs(Back));
-      }
-    }
-  }
-};*/

@@ -12,8 +12,8 @@ private:
   const uint8_t Vy_Pin = 32;  //D32
 
   const uint8_t sampling = 10;
-  const int16_t dead_zone1 = 99;  
-  const int16_t dead_zone2 = 180; 
+  const int16_t dead_zone1 = 150;  
+  const int16_t dead_zone2 = 200; 
   uint16_t sumVx = 0;
   uint16_t sumVy = 0;
 

@@ -7,14 +7,13 @@
 #include <esp_now.h>
 
 #include "Variable.h"
-// ไลบราลี่เราเอง
-#include <MyEsp_address.h>
+#include "MyEsp_address.h"
 
 typedef struct Data {
-  int id;
-  int joy_left = 0;
-  int joy_right = 0;
-} Data_t;
+  int32_t id;
+  int16_t joy_left;
+  int16_t joy_right;
+} __attribute__((packed)) Data_t;
 
 extern Control controller;
 
@@ -22,7 +21,6 @@ void OnDataSent(const uint8_t* mac_addr, esp_now_send_status_t status) {
   if (status == ESP_NOW_SEND_SUCCESS) {
     digitalWrite(controller.led_espNow_Pin, HIGH);
   } else {
-    // Fail
     digitalWrite(controller.led_espNow_Pin, HIGH);
     delay(10);
     digitalWrite(controller.led_espNow_Pin, LOW);
@@ -33,7 +31,6 @@ void OnDataSent(const uint8_t* mac_addr, esp_now_send_status_t status) {
 
 void setup_esp_now(const uint8_t* peer_address) {
   WiFi.mode(WIFI_STA);
-  WiFi.channel(1);
   WiFi.disconnect();
 
   if (esp_now_init() != ESP_OK) {
@@ -41,12 +38,11 @@ void setup_esp_now(const uint8_t* peer_address) {
     delay(1000);
     ESP.restart();
   }
-  // callback สำหรับการส่ง
   esp_now_register_send_cb(OnDataSent);
 
   esp_now_peer_info_t peerInfo = {};
   memcpy(peerInfo.peer_addr, peer_address, 6);
-  peerInfo.channel = 0;
+  peerInfo.channel = 1;
   peerInfo.encrypt = false;
 
   if (esp_now_add_peer(&peerInfo) != ESP_OK) {
@@ -60,7 +56,6 @@ void send_data(Data_t* data, Control* controller, const uint8_t* peer_address) {
   data->id++;
   data->joy_left = controller->joy_send_left;
   data->joy_right = controller->joy_send_right;
-  // ส่งข้อมูล
   esp_now_send(peer_address, (uint8_t*)data, sizeof(Data_t));
 }
 
