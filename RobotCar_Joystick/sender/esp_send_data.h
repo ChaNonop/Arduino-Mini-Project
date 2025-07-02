@@ -16,7 +16,6 @@ typedef struct Data {
 
 extern Control controller;
 
-// ใช้ volatile สำหรับแฟล็กที่แชร์ระหว่าง interrupt และ loop
 volatile bool sendSuccess = false;
 volatile bool sendFailed = false;
 unsigned long lastLedChange = 0;
