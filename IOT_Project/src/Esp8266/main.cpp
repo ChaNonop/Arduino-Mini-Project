@@ -1,26 +1,16 @@
-#include <Arduino.h>
-#include <SPI.h>
-#include <Wire.h>
-#include <ESP8266WiFi.h> 
-#include <PubSubClient.h>
-#include <RH_ASK.h>
-
-#include <Adafruit_Sensor.h>
-#include <DHT.h>
-#include <DHT_U.h>
-
 #include "config.h"
 #include "receiver.h"
 #include "Transmit.h"
 
 
-#define TRANSMITTER_rp2040  // <--- เลือกบรรทัดนี้ถ้าจะ Flash ลง Pi Pico
-// #define RECEIVER_esp8266     // <--- เลือกบรรทัดนี้ถ้าจะ Flash ลง ESP8266
 
-// ================================================================
+ sensor dht(4, DHT11, 2000); 
+// #define TRANSMITTER_rp2040  // เลือกบรรทัดนี้ถ้าจะ Flash ลง Pi Pico
+#define RECEIVER_esp8266     // เลือกบรรทัดนี้ถ้าจะ Flash ลง ESP8266
+
 
 #ifdef TRANSMITTER_rp2040
-    #include "transmitter.h"
+    #include "Transmit.h"
     // Pi Pico: ขา Data ต่อ GP0
     SensorTransmitter tx(0, 1); // Pin 0, Node ID 1
 
@@ -78,106 +68,106 @@
 
 
 
-class Wifi {
-  public :
-  long lastMsg = 0;
-  char msg[100];
+// class Wifi {
+//   public :
+//   long lastMsg = 0;
+//   char msg[100];
 
-  Wifi (){ //defalt constructor
+//   Wifi (){ //defalt constructor
 
-  };
+//   };
 
-  // Function to reconnect to MQTT broker
-  void reconnectMQTT() {
-    while (!client.connected()) {
-      Serial.print("Attempting MQTT connection...");
-      if (client.connect(mqtt_Client, mqtt_username, mqtt_password)) {
-        Serial.println("connected");
-        client.subscribe("@msg/operator");
-      } else {
-        Serial.print("Failed, rc=");
-        Serial.print(client.state());
-        Serial.println(" trying again in 5 seconds");
-        delay(5000);
-      }
-    }
-  }
-  // Callback function for รับข้อความจาก mqtt แล้วทำไงต่อ
-  void callback(char* topic, byte* payload, unsigned int length) {
-  String message;
-  for (unsigned int i = 0; i < length; i++) {
-    message += (char)payload[i];
-  }
+//   // Function to reconnect to MQTT broker
+//   void reconnectMQTT() {
+//     while (!client.connected()) {
+//       Serial.print("Attempting MQTT connection...");
+//       if (client.connect(mqtt_Client, mqtt_username, mqtt_password)) {
+//         Serial.println("connected");
+//         client.subscribe("@msg/operator");
+//       } else {
+//         Serial.print("Failed, rc=");
+//         Serial.print(client.state());
+//         Serial.println(" trying again in 5 seconds");
+//         delay(5000);
+//       }
+//     }
+//   }
+//   // Callback function for รับข้อความจาก mqtt แล้วทำไงต่อ
+//   void callback(char* topic, byte* payload, unsigned int length) {
+//   String message;
+//   for (unsigned int i = 0; i < length; i++) {
+//     message += (char)payload[i];
+//   }
 
-  Serial.print("Message arrived [");
-  Serial.print(topic);
-  Serial.print("]: ");
-  Serial.println(message);
-  }
-  // Function to publish sensor data to MQTT
-  void publishSensorData(float temp, float humidity, float Lux) {
-    snprintf(msg, sizeof(msg), "{\"data\":{\"temperature\":%.2f,\"humidity\":%.2f,\"lux\":%.2f}}", temp, humidity, Lux);
-    Serial.print("Publishing message: ");
-    Serial.println(msg);
-    client.publish("@shadow/data/update", msg);
-  }
-  void begin(){
-    WiFi.begin(config.getWiFiSSID(), config.getWiFiPassword());
+//   Serial.print("Message arrived [");
+//   Serial.print(topic);
+//   Serial.print("]: ");
+//   Serial.println(message);
+//   }
+//   // Function to publish sensor data to MQTT
+//   void publishSensorData(float temp, float humidity, float Lux) {
+//     snprintf(msg, sizeof(msg), "{\"data\":{\"temperature\":%.2f,\"humidity\":%.2f,\"lux\":%.2f}}", temp, humidity, Lux);
+//     Serial.print("Publishing message: ");
+//     Serial.println(msg);
+//     client.publish("@shadow/data/update", msg);
+//   }
+//   void begin(){
+//     WiFi.begin(config.getWiFiSSID(), config.getWiFiPassword());
     
-    mqtt.setCredentials(
-        config.getMQTTToken(),
-        config.getMQTTSecret()
-  } 
-};
-class sensor{
-  private:
+//     mqtt.setCredentials(
+//         config.getMQTTToken(),
+//         config.getMQTTSecret()
+//   } 
+// };
+// class sensor{
+//   private:
   
-  public:
-};
+//   public:
+// };
  
-class riceiver{
-  private:
+// class riceiver{
+//   private:
 
-  RH_ASK rf_driver(2000,D2,D1,0); // rf riciver
+//   RH_ASK rf_driver(2000,D2,D1,0); // rf riciver
 
-  void setup() {
-    Serial.begin(115200);
+//   void setup() {
+//     Serial.begin(115200);
     
-    if (!rf_driver.init()) {
-      Serial.println(F("RF driver init failed!"));
-    } else {
-      Serial.println(F("RF driver init success."));
-    }
-  }
-  public:
+//     if (!rf_driver.init()) {
+//       Serial.println(F("RF driver init failed!"));
+//     } else {
+//       Serial.println(F("RF driver init success."));
+//     }
+//   }
+//   public:
 
-  int data(){
+//   int data(){
 
-  }
-  uint8_t buf[RH_ASK_MAX_MESSAGE_LEN];
-  uint8_t buflen = sizeof(buf);
+//   }
+//   uint8_t buf[RH_ASK_MAX_MESSAGE_LEN];
+//   uint8_t buflen = sizeof(buf);
 
-  // Check if a message has been received.
-  if (rf_driver.recv(buf, &buflen)) {
-    // Print the message if it is received.
-    Serial.print(F("Message Received: "));
-    Serial.println((char*)buf);
-  }
-};
+//   // Check if a message has been received.
+//   if (rf_driver.recv(buf, &buflen)) {
+//     // Print the message if it is received.
+//     Serial.print(F("Message Received: "));
+//     Serial.println((char*)buf);
+//   }
+// };
 
 
-void setup() {
-  Serial.begin(115200);
+// void setup() {
+//   Serial.begin(115200);
   
-  connectToWiFi(); // Connect to WiFi
-  client.setServer(mqtt_server, mqtt_port); // Set MQTT server
-  client.setCallback(callback); // Set MQTT callback
-}
+//   connectToWiFi(); // Connect to WiFi
+//   client.setServer(mqtt_server, mqtt_port); // Set MQTT server
+//   client.setCallback(callback); // Set MQTT callback
+// }
 
-void loop() {
-  printf("Hello World x= %d y = %d\n", x, y);
-  delay(1000);
-}
+// void loop() {
+//   printf("Hello World x= %d y = %d\n", x, y);
+//   delay(1000);
+// }
 
 
 

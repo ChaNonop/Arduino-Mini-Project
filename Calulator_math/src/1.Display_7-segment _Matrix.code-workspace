@@ -1,0 +1,26 @@
+{
+	"folders": [
+		{
+			"name": "1.Display_7-segment _Matrix",
+			"path": "../../../1.learn-Arduino/1.Display_7-segment _Matrix"
+		},
+		{
+			"name": "Calulator_math",
+			"path": ".."
+		},
+		{
+			"name": "Pi",
+			"path": "../../../../1_Python/Pi"
+		},
+		{
+			"name": "IOT_Project",
+			"path": "../../IOT_Project"
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"bitset": "cpp",
+			"algorithm": "cpp"
+		}
+	}
+}

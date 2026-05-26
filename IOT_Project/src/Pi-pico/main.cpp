@@ -42,15 +42,3 @@ void loop() {
     Serial.println(F("Not sending data"));
   }
 }
-
-// class sensor{
-//   private:
-
-//   public:      
-// }
-// class Wifimanager{
-//   private:
-
-//   public:      
-// }
-
